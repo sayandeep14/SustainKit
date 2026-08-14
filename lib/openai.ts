@@ -1,0 +1,12 @@
+import "server-only";
+import OpenAI from "openai";
+
+const apiKey = process.env.OPENAI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("Missing OPENAI_API_KEY env var");
+}
+
+export const openai = new OpenAI({ apiKey });
+
+export const OPENAI_MODEL = "gpt-5.6-terra";
