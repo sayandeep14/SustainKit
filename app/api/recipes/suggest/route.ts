@@ -6,14 +6,27 @@ import { openai, OPENAI_MODEL } from "@/lib/openai";
 import type { MealSlot, RecipeSuggestion } from "@/types";
 
 const VALID_SLOTS: MealSlot[] = ["breakfast", "lunch", "snack", "dinner"];
+const MIN_SERVINGS = 1;
+const MAX_SERVINGS = 100;
+
+function parseServings(value: unknown): number | null {
+  const servings = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(servings) || servings < MIN_SERVINGS || servings > MAX_SERVINGS) {
+    return null;
+  }
+  return servings;
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const mealSlot = body?.meal_slot as MealSlot;
+  const servings = parseServings(body?.servings);
 
-  if (!VALID_SLOTS.includes(mealSlot)) {
+  if (!VALID_SLOTS.includes(mealSlot) || servings === null) {
     return NextResponse.json(
-      { error: `meal_slot must be one of ${VALID_SLOTS.join(", ")}` },
+      {
+        error: `meal_slot must be one of ${VALID_SLOTS.join(", ")} and servings must be an integer from ${MIN_SERVINGS} to ${MAX_SERVINGS}`,
+      },
       { status: 400 }
     );
   }
@@ -35,7 +48,7 @@ export async function POST(request: NextRequest) {
   }
 
   const recentNames = (recentHistory ?? []).map((r) => r.recipe_name as string);
-  const prompt = buildRecipePrompt(mealSlot, inventory, recentNames);
+  const prompt = buildRecipePrompt(mealSlot, inventory, recentNames, servings);
 
   try {
     const completion = await openai.chat.completions.create({
@@ -44,7 +57,7 @@ export async function POST(request: NextRequest) {
       messages: [{ role: "user", content: prompt }],
     });
     const text = completion.choices[0]?.message?.content ?? "{}";
-    const suggestion = JSON.parse(text) as RecipeSuggestion;
+    const suggestion = { ...JSON.parse(text), servings } as RecipeSuggestion;
 
     return NextResponse.json({ meal_slot: mealSlot, suggestion });
   } catch (err) {

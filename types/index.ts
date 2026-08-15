@@ -25,10 +25,12 @@ export interface InventoryItem {
 export interface RecipeIngredient {
   inventory_item_id: string | null;
   name: string;
-  quantity_used: string;
+  quantity_used: number;
+  unit: string;
 }
 
 export interface RecipeSuggestion {
+  servings: number;
   recipe_name: string;
   description: string;
   ingredients_used: RecipeIngredient[];

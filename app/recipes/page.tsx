@@ -8,6 +8,7 @@ type Status = "idle" | "loading" | "error" | "ready" | "accepted";
 
 export default function RecipesPage() {
   const [mealSlot, setMealSlot] = useState<MealSlot>("dinner");
+  const [servings, setServings] = useState(2);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<RecipeSuggestion | null>(null);
@@ -20,7 +21,7 @@ export default function RecipesPage() {
       const res = await fetch("/api/recipes/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meal_slot: mealSlot }),
+        body: JSON.stringify({ meal_slot: mealSlot, servings }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to get a suggestion");
@@ -39,7 +40,7 @@ export default function RecipesPage() {
       const res = await fetch("/api/recipes/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meal_slot: mealSlot, suggestion }),
+        body: JSON.stringify({ meal_slot: mealSlot, servings, suggestion }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to accept recipe");
@@ -69,6 +70,21 @@ export default function RecipesPage() {
             </option>
           ))}
         </select>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-zinc-600 dark:text-zinc-400">People</span>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            step={1}
+            value={servings}
+            onChange={(e) =>
+              setServings(Math.max(1, Math.min(100, Number(e.target.value) || 1)))
+            }
+            className="w-20 rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            aria-label="Number of people"
+          />
+        </label>
         <button
           onClick={requestSuggestion}
           disabled={status === "loading"}
@@ -93,6 +109,10 @@ export default function RecipesPage() {
       {suggestion && (
         <div className="mt-6 rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
           <h2 className="text-lg font-semibold">{suggestion.recipe_name}</h2>
+          <p className="mt-1 text-xs font-medium text-zinc-500">
+            Sized for {suggestion.servings ?? servings}{" "}
+            {(suggestion.servings ?? servings) === 1 ? "person" : "people"}
+          </p>
           <p className="mt-1 text-sm text-zinc-500">{suggestion.description}</p>
 
           {suggestion.prioritized_expiring_items?.length > 0 && (
@@ -105,7 +125,7 @@ export default function RecipesPage() {
           <ul className="mt-1 list-inside list-disc text-sm text-zinc-600 dark:text-zinc-400">
             {suggestion.ingredients_used?.map((ing, i) => (
               <li key={i}>
-                {ing.name} — {ing.quantity_used}
+                {ing.name} — {ing.quantity_used} {ing.unit}
               </li>
             ))}
           </ul>
