@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // dev-tools/seeder is a separate Next.js app with its own lint/tsconfig.
+    "dev-tools/**",
   ]),
 ]);
 
