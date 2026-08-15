@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { supabaseAdmin, DEFAULT_HOUSEHOLD_ID } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { upsertInventoryItem } from "@/lib/inventory";
 import type { InventoryCategory, InventoryStatus } from "@/types";
 
 export async function addInventoryItem(formData: FormData) {
@@ -15,8 +16,7 @@ export async function addInventoryItem(formData: FormData) {
     throw new Error("Item name and category are required");
   }
 
-  const { error } = await supabaseAdmin.from("inventory_items").insert({
-    household_id: DEFAULT_HOUSEHOLD_ID,
+  await upsertInventoryItem({
     name,
     category,
     quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
@@ -24,7 +24,6 @@ export async function addInventoryItem(formData: FormData) {
     expiry_date: expiryDateRaw || null,
   });
 
-  if (error) throw error;
   revalidatePath("/inventory");
   revalidatePath("/");
 }
