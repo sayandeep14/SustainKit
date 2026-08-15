@@ -15,7 +15,8 @@ restock — no more than once or twice a week — instead of asking every day.
   an OpenAI-generated recipe built from what's actually in your inventory. It's
   told your recent recipe history (so it won't repeat itself) and which items
   are closest to expiring (so it prioritizes using those up). Accepting a
-  recipe logs it to history and marks the ingredients it used as consumed.
+  recipe logs it to history and subtracts the requested ingredient quantities;
+  an item is marked consumed only when its remaining quantity reaches zero.
 - **Restock advisor** — a scheduled check (`/api/cron/restock-check`) looks at
   how thin each shelf-life tier has gotten and decides whether to surface a
   "time to restock" banner on the dashboard. It intentionally throttles itself
@@ -35,9 +36,9 @@ restock — no more than once or twice a week — instead of asking every day.
 ### 1. Create a Supabase project
 
 Create a project at [supabase.com](https://supabase.com), then run the
-migration in `supabase/migrations/0001_init.sql` against it (via the SQL
-editor, or the Supabase CLI: `supabase db push`). This creates the schema and
-seeds one default household row.
+migrations in `supabase/migrations/` against it (via the SQL editor, or the
+Supabase CLI: `supabase db push`). The second migration adds the transactional
+recipe/inventory quantity deduction function.
 
 ### 2. Configure environment variables
 
@@ -85,7 +86,7 @@ app/
   inventory/page.tsx              inventory CRUD (server actions in actions.ts)
   recipes/page.tsx                recipe suggestion UI
   api/recipes/suggest/route.ts    calls OpenAI for a recipe suggestion
-  api/recipes/accept/route.ts     persists a recipe, marks ingredients consumed
+  api/recipes/accept/route.ts     persists a recipe and deducts used quantities
   api/cron/restock-check/route.ts evaluates inventory, may log a restock nudge
   api/restock/acknowledge/route.ts dismisses a restock banner
 lib/
@@ -94,7 +95,7 @@ lib/
   inventory.ts                     inventory queries/helpers
   restock.ts                       restock-check logic
   prompts.ts                       recipe prompt template
-supabase/migrations/0001_init.sql  schema
+supabase/migrations/               schema and inventory deduction logic
 types/index.ts                     shared types
 ```
 
