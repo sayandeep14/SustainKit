@@ -1,0 +1,12 @@
+1. if some items are getting expired soon or today , then it should not create recipe in a hurry which doesn't make sense. It can break and create more than one recipes to finish the items which are getting expired instead of creating on recipe with all items which are getting expired.
+2. Put items in different sections, each with different expiry date. This comes with change in db to store multiple exp date for multiple quantities.
+3. Do not use to be expired items by default in the recipe. Control will be in hand of user.
+4. User preference in recipe. 
+5. Direct Recipe Generating.
+
+
+Future Enhancement: 
+Cost Tracking : How much we are spending everyday
+Check Wastage Cost / Suggestion for savings (RL)
+Nutrient Tracking
+Feed section. user can attach phtotos, comment and share their recipe.
