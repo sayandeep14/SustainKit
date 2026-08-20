@@ -1,5 +1,5 @@
-0. Configure Claude Code. [Mehak]
-1. Decline button on recipe generation page , if user do not want to cook the recipe. [Mehak]
+0. Configure Claude Code. [Mehak] [P1]
+1. Decline button on recipe generation page, if user do not want to cook the recipe. [Mehak] [Manually]
 2. Input for number of people for which recipe is needed to be cook. [Mehak]
 3. Option of veg/non-veg. [Mehak]
 *4. Deduction of items from inventory on the basis of usage. [M/S]
